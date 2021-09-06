@@ -1,0 +1,156 @@
+https://learning.postman.com/docs/writing-scripts/script-references/test-examples/
+POSTMAN_TEST
+
+//1 Проверка заголовков:
+1.1 Если метод GET, то переключаем на OPTIONS, смотрим header ALLOW ( там указаны допустимые методы). Этот тест запускаем на  OPTIONS.
+let header = pm.response.headers.get('Allow');
+pm.test('header is valid', function () {
+let param = "GET, POST, HEAD, OPTIONS";
+pm.expect(param).to.eql(header);
+});
+
+
+1.2 проверка наличия хедера в ответе
+pm.test("Content-Type is present", function () {
+    pm.response.to.have.header("Content-Type");
+});
+
+1.3 заголовки содержат определенное значение:
+let headerserver = pm.response.headers.get('Server');
+pm.test('header Server is valid', function () {
+let param = "Werkzeug";
+pm.expect(headerserver).to.include(param);
+});
+
+1.4
+pm.test("Content-Type header is application/json", () => {
+  pm.expect(pm.response.headers.get('Content-Type')).to.eql('application/json');
+});
+
+
+//2 URL
+2.1
+Немного правим урл => ошибка 404
+можно сделать отдельным тестом
+pm.test("Status code is 404", function () {
+    pm.response.to.have.status(404);
+});
+
+2.2 если у нас https то можно отправить http и наоборот
+
+
+//3 Методы:
+работать должно только с методом из спецификации
+п 1.1 
+
+//4 Статус коды + название+ структура ( снипет)
+pm.test("Status code is 200", function () {
+    pm.response.to.have.status(200);
+    pm.response.to.be.ok;
+    pm.response.to.be.json;
+});
+
+//5 Время ответа ( снипет) - из документации
+pm.test("Response time is less than 1000ms", function () {
+    pm.expect(pm.response.responseTime).to.be.below(1000);
+});
+
+
+//6 Size
+для get не актуально, для POST ( из требований-редко)
+
+
+//7 COOKIES
+7.1 Наличие определенного куки
+pm.test("Cookie JSESSIONID is present", () => {
+  pm.expect(pm.cookies.has('JSESSIONID')).to.be.true;
+});
+
+7.2 определеенный куки содержит определенное value значение
+pm.test("Cookie isLoggedIn has value 1", () => {
+  pm.expect(pm.cookies.get('isLoggedIn')).to.eql('1');
+});
+
+
+
+//8 ответы - responses
+8.1 Проверка, что данные есть
+let jsonData = pm.response.json();
+pm.test('Has data', function() {
+  pm.expect(jsonData).to.be.not.empty;
+});
+
+8.2 проверка конкретного значения в данных
+pm.test('name',function()	{
+let jsonData = pm.response.json();
+pm.expect(jsonData).to.include("Vitaliya");
+});
+8.2.1
+pm.test('name',function()	{
+let jsonData = pm.response.json();
+pm.expect(jsonData.name).to.eql("Vitaliya");
+});
+
+
+8.3 Проверка, что значение больше ( меньше) какого то числа + перевод строкового числа в числовое значение
+pm.test('avg',function(){
+let jsonData = pm.response.json();
+let data_closed = +jsonData.data.closed_cased;  // это перевод в число определенной переменной ( ответ)
+let ismore;
+if (data_closed > 50) {ismore = true};
+pm.expect(ismore).to.be.true;
+});
+
+8.3.1 - если ответ массив ( json response [ "Vitaliya", "28"])
+pm.test('avg',function(){
+let jsonData = pm.response.json();
+let data_closed = +jsonData[1];  // это перевод в число определенной переменной ( ответ)
+let ismore;
+if (data_closed > 5) {ismore = true};
+pm.expect(ismore).to.be.true;
+});
+
+
+8.4 Проверка, что есть определенный ключ в ответ (json response {"age": 28,"name": "Vitaliya"})
+pm.test('test key',function(){
+let jsonData = pm.response.json();
+pm.expect(jsonData).to.have.any.keys("age");
+});
+
+
+
+Проверка схемы:
+json response
+{
+    "age": 28,
+    "name": "Vita",
+    "salary": [
+        4000,
+        "8000",
+        "12000"]
+}
+
+//Проверка структуры json в ответе.
+let person = pm.response.json();
+let schema = {
+  "type": "object",
+    "properties": {
+    "age": {"type": "number"},
+    "name": {"type": "string"},
+    "salary": {"type": "array",
+      "items": [
+        {"items": "number"},
+        {"items": "string" },
+        {"items": "string"}]
+    }
+  },
+ }
+pm.test('Schema is valid', function () {
+pm.expect(tv4.validate(person, schema)).to.be.true;
+});
+
+
+проверка длины переменной
+let jsonData = pm.response.json();
+let rows = jsonData.data.row ;
+console.log(rows.lenght);
